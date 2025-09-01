@@ -1,3 +1,5 @@
 # Sample
 
-Hello
+## Quickstart
+```bash
+node index.js
