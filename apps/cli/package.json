@@ -1,0 +1,26 @@
+{
+  "name": "@redactguard/cli",
+  "version": "0.1.0",
+  "description": "RedactGuard CLI for CI/CD pipelines",
+  "main": "dist/index.js",
+  "bin": {
+    "redactguard": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "commander": "^12.0.0",
+    "chalk": "^5.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.0",
+    "eslint": "^8.55.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

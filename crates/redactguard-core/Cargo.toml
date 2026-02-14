@@ -1,0 +1,20 @@
+[package]
+name = "redactguard-core"
+version = "0.1.0"
+edition = "2021"
+description = "Ironclad sanitization engine - cryptographic data destruction"
+license = "MIT"
+
+[dependencies]
+# Image processing
+image = "0.25"
+# Cryptography (CSPRNG for redaction)
+rand = "0.8"
+rand_chacha = "0.3"
+# PDF (future)
+# lopdf = "0.32"
+# Secure memory
+# memsec = "0.6"
+
+[dev-dependencies]
+tempfile = "3.10"

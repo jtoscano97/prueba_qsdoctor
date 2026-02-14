@@ -1,0 +1,23 @@
+/* RedactGuard Web — Cyber-Minimalist */
+:root {
+  --bg-obsidian: #0D0D0F;
+  --bg-charcoal: #1A1A1E;
+  --accent-green: #00FF88;
+  --accent-red: #FF3366;
+  --text-primary: #E4E4E7;
+  --text-muted: #71717A;
+  --border: rgba(0, 255, 136, 0.2);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-obsidian);
+  color: var(--text-primary);
+  min-height: 100vh;
+}
