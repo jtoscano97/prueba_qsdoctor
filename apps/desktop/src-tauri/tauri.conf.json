@@ -1,0 +1,30 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "RedactGuard",
+  "version": "0.1.0",
+  "identifier": "com.redactguard.app",
+  "build": {
+    "beforeBuildCommand": "npm run build",
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "RedactGuard — Zero-Trust Data Sanitization",
+        "width": 1200,
+        "height": 800,
+        "minWidth": 800,
+        "minHeight": 600
+      }
+    ]
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "category": "Productivity",
+    "shortDescription": "Zero-Trust Data Sanitization & Compliance Suite",
+    "longDescription": "RedactGuard erradica las filtraciones por redacciones defectuosas. Motor de destrucción criptográfica irreversible."
+  }
+}

@@ -1,0 +1,17 @@
+[package]
+name = "redactguard-desktop"
+version = "0.1.0"
+edition = "2021"
+description = "RedactGuard — Desktop app (Tauri)"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-shell = "2"
+# redactguard-core = { path = "../../../crates/redactguard-core" }  # Enable when building desktop
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]
