@@ -24,6 +24,12 @@ jobs:
       - name: Build CLI
         run: npm run build:cli
 
+      - name: Build WASM
+        run: npm run build:wasm
+
+      - name: Build Web
+        run: npm run build:web
+
       - name: Lint
         run: npm run lint
         continue-on-error: true
