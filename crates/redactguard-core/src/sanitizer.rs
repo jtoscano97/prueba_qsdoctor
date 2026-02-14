@@ -1,9 +1,10 @@
 //! Bit-level destruction: replace pixels with cryptographic noise.
 //! Zero interpolation. Zero correlation with original.
 
-use image::{DynamicImage, GenericImage, GenericImageView};
+use image::{DynamicImage, GenericImage, GenericImageView, ImageFormat};
 use rand_chacha::ChaCha20Rng;
 use rand::{RngCore, SeedableRng};
+use std::io::Cursor;
 use std::path::Path;
 
 /// Zone to sanitize (x, y, width, height) in pixels
@@ -60,5 +61,14 @@ impl ImageSanitizer {
         Self::sanitize_zones(&mut img, zones, None);
         img.save(output_path)?;
         Ok(())
+    }
+
+    /// Sanitize image from bytes, return sanitized bytes. For WASM/browser.
+    pub fn sanitize_bytes(input: &[u8], zones: &[RedactionZone]) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+        let mut img = image::load_from_memory(input)?;
+        Self::sanitize_zones(&mut img, zones, None);
+        let mut output = Vec::new();
+        img.write_to(&mut Cursor::new(&mut output), ImageFormat::Png)?;
+        Ok(output)
     }
 }

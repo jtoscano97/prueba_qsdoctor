@@ -1,5 +1,6 @@
 [workspace]
 resolver = "2"
 members = [
-    "crates/redactguard-core"
+    "crates/redactguard-core",
+    "packages/redactguard-wasm"
 ]

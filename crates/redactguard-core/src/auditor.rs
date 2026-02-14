@@ -9,6 +9,7 @@ use std::path::Path;
 pub struct AuditResult {
     pub score: f64,       // 0–100, 100 = critical
     pub findings: Vec<Finding>,
+    pub heatmap: Vec<Vec<f64>>,  // Risk per 8x8 block for X-Ray view
 }
 
 #[derive(Debug, Clone)]
@@ -30,6 +31,47 @@ pub enum Severity {
 pub struct ReversibilityAnalyzer;
 
 impl ReversibilityAnalyzer {
+    /// Analyze image from bytes. For WASM/browser.
+    pub fn analyze_bytes(input: &[u8]) -> Result<AuditResult, Box<dyn std::error::Error>> {
+        let img = image::load_from_memory(input)?.to_luma8();
+        let (width, height) = img.dimensions();
+        let mut findings = Vec::new();
+        let mut max_low_entropy = 0.0f64;
+        let mut heatmap: Vec<Vec<f64>> = vec![vec![0.0; (width / 8 + 1) as usize]; (height / 8 + 1) as usize];
+
+        const BLOCK: u32 = 8;
+        for (by, y) in (0..height).step_by(BLOCK as usize).enumerate() {
+            for (bx, x) in (0..width).step_by(BLOCK as usize).enumerate() {
+                let ent = block_entropy(&img, x, y, BLOCK);
+                let risk = if ent < 2.0 && ent > 0.0 { 1.0 - ent / 2.0 } else { 0.0 };
+                max_low_entropy = max_low_entropy.max(risk);
+                if by < heatmap.len() && bx < heatmap[0].len() {
+                    heatmap[by][bx] = risk * 100.0;
+                }
+            }
+        }
+
+        let score = (max_low_entropy * 100.0).min(100.0);
+        if score > 50.0 {
+            findings.push(Finding {
+                severity: Severity::High,
+                message: "Low entropy zones detected — possible reversible redaction (pixelation/blur)".into(),
+                x: None,
+                y: None,
+            });
+        }
+        if score > 80.0 {
+            findings.insert(0, Finding {
+                severity: Severity::Critical,
+                message: "Critical: High probability of reversible redaction. Use cryptographic sanitization.".into(),
+                x: None,
+                y: None,
+            });
+        }
+
+        Ok(AuditResult { score, findings, heatmap })
+    }
+
     /// Compute local entropy in 8x8 blocks. Low entropy may indicate reversible patterns.
     pub fn analyze_image(path: &Path) -> Result<AuditResult, Box<dyn std::error::Error>> {
         let img = image::open(path)?.to_luma8();
@@ -57,7 +99,7 @@ impl ReversibilityAnalyzer {
             });
         }
 
-        Ok(AuditResult { score, findings })
+        Ok(AuditResult { score, findings, heatmap: vec![] })
     }
 }
 

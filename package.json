@@ -10,7 +10,8 @@
   "scripts": {
     "dev:web": "npm run dev -w @redactguard/web",
     "dev:desktop": "npm run tauri dev -w @redactguard/desktop",
-    "build:web": "npm run build -w @redactguard/web",
+    "build:web": "npm run build:wasm && npm run build -w @redactguard/web",
+    "build:wasm": "cd packages/redactguard-wasm && wasm-pack build --target web",
     "build:desktop": "npm run tauri build -w @redactguard/desktop",
     "cli": "node apps/cli/dist/index.js",
     "build:cli": "npm run build -w @redactguard/cli",

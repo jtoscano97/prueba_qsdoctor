@@ -8,7 +8,6 @@ build/
 .next/
 out/
 target/
-*.wasm
 
 # IDE & OS
 .idea/

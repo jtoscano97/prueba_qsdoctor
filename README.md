@@ -28,7 +28,7 @@ redactguard/
 ├── apps/
 │   ├── cli/                  # CLI para CI/CD (redactguard audit/sanitize)
 │   ├── desktop/              # App Tauri (React + Rust)
-│   └── web/                  # Next.js (WASM client-side próximo)
+│   └── web/                  # Next.js + WASM (sanitización 100% local)
 ├── docs/
 │   └── REDACTGUARD-TECHNICAL-MASTER-DOCUMENT.md
 └── package.json              # Monorepo npm workspaces
@@ -63,13 +63,21 @@ npx redactguard audit ./documento.pdf
 npx redactguard sanitize input.png output.png
 ```
 
-### Web (Next.js)
+### Web (Next.js + WASM)
 
 ```bash
+# Compilar WASM (primera vez o tras cambios en Rust)
+npm run build:wasm
+
 npm run dev:web
 ```
 
 Abre [http://localhost:3000](http://localhost:3000)
+
+- Drop zone: arrastrar, pegar desde portapapeles
+- Click en imagen para añadir zonas de redacción
+- **Auditar**: detección de reversibilidad (entropía)
+- **Sanitizar**: destrucción criptográfica → descarga PNG
 
 ### Desktop (Tauri)
 
