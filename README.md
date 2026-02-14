@@ -57,10 +57,11 @@ npm install
 npm run build:cli
 
 # Auditar archivo (detectar reversibilidad)
-npx redactguard audit ./documento.pdf
+npm run cli -- audit ./imagen.png
+npm run cli -- audit ./imagen.png --json --exit-on-fail  # CI
 
-# Sanitizar (Rust core en integración)
-npx redactguard sanitize input.png output.png
+# Sanitizar con zonas (x,y,w,h; x,y,w,h para múltiples)
+npm run cli -- sanitize input.png output.png -z "10,20,100,40"
 ```
 
 ### Web (Next.js + WASM)
@@ -123,7 +124,7 @@ Ver [REDACTGUARD-TECHNICAL-MASTER-DOCUMENT.md](docs/REDACTGUARD-TECHNICAL-MASTER
 | Core | Rust (image, rand_chacha) |
 | Desktop | Tauri 2 + React + Vite |
 | Web | Next.js 14 |
-| CLI | TypeScript + Commander |
+| CLI | TypeScript + Rust binary (redactguard-bin) |
 
 ---
 

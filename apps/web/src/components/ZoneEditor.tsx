@@ -89,11 +89,32 @@ export function ZoneEditor({
   };
 
   const handleCanvasClick = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).tagName !== 'CANVAS') return;
     const { x, y } = getCanvasCoords(e);
-    onZonesChange([
-      ...zones,
-      { id: crypto.randomUUID(), x: Math.max(0, x - 50), y: Math.max(0, y - 20), width: 100, height: 40 },
-    ]);
+    const newZone = {
+      id: crypto.randomUUID(),
+      x: Math.max(0, x - 50),
+      y: Math.max(0, y - 20),
+      width: 100,
+      height: 40,
+    };
+    onZonesChange([...zones, newZone]);
+  };
+
+  const handleZoneResize = (id: string, dx: number, dy: number, dw: number, dh: number) => {
+    onZonesChange(
+      zones.map((z) =>
+        z.id === id
+          ? {
+              ...z,
+              x: Math.max(0, z.x + dx),
+              y: Math.max(0, z.y + dy),
+              width: Math.max(20, z.width + dw),
+              height: Math.max(20, z.height + dh),
+            }
+          : z
+      )
+    );
   };
 
   const handleDeleteZone = (id: string) => {
@@ -110,9 +131,13 @@ export function ZoneEditor({
         {zones.map((z) => (
           <div key={z.id} className="zone-item">
             <code>{z.x},{z.y} {z.width}×{z.height}</code>
-            <button type="button" onClick={() => handleDeleteZone(z.id)} className="btn-delete">
-              Eliminar
-            </button>
+            <div className="zone-actions">
+              <button type="button" onClick={() => handleZoneResize(z.id, 0, 0, -10, 0)} title="Reducir ancho">−</button>
+              <button type="button" onClick={() => handleZoneResize(z.id, 0, 0, 10, 0)} title="Aumentar ancho">+</button>
+              <button type="button" onClick={() => handleDeleteZone(z.id)} className="btn-delete">
+                ✕
+              </button>
+            </div>
           </div>
         ))}
       </div>

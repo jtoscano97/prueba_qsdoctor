@@ -14,7 +14,7 @@
     "build:wasm": "cd packages/redactguard-wasm && wasm-pack build --target web",
     "build:desktop": "npm run tauri build -w @redactguard/desktop",
     "cli": "node apps/cli/dist/index.js",
-    "build:cli": "npm run build -w @redactguard/cli",
+    "build:cli": "cargo build --release -p redactguard-bin && mkdir -p apps/cli/bin && (cp target/release/redactguard apps/cli/bin/ 2>/dev/null || cp target/release/redactguard.exe apps/cli/bin/ 2>/dev/null) && npm run build -w @redactguard/cli",
     "lint": "npm run lint --workspaces --if-present",
     "test": "npm run test --workspaces --if-present"
   },

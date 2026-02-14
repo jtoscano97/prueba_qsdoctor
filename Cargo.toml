@@ -2,5 +2,7 @@
 resolver = "2"
 members = [
     "crates/redactguard-core",
+    "crates/redactguard-bin",
     "packages/redactguard-wasm"
 ]
+exclude = ["apps/desktop/src-tauri"]

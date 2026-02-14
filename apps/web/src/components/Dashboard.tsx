@@ -48,10 +48,14 @@ export function Dashboard() {
     }
   }, [fileData]);
 
+  const [showScanAnim, setShowScanAnim] = useState(false);
+
   const handleSanitize = useCallback(async () => {
     if (!fileData) return;
     setLoading(true);
     setError(null);
+    setShowScanAnim(true);
+    setTimeout(() => setShowScanAnim(false), 2000);
     try {
       const zonePayload = zones.map((z) => ({ x: z.x, y: z.y, width: z.width, height: z.height }));
       const result = await sanitizeImage(new Uint8Array(fileData.data), zonePayload);
@@ -87,6 +91,7 @@ export function Dashboard() {
 
   return (
     <div className="dashboard">
+      {showScanAnim && <div className="scan-line" aria-hidden />}
       <header className="header">
         <h1 className="logo">RedactGuard</h1>
         <span className="tagline">Zero-Trust Data Sanitization</span>

@@ -1,4 +1,4 @@
-use redactguard_core::{sanitizer::*, auditor::*};
+use redactguard_core::{sanitizer::*, auditor::*, pii};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
@@ -36,6 +36,13 @@ pub fn sanitize_image(input: &[u8], zones_json: &str) -> Result<Vec<u8>, JsValue
         .collect();
     ImageSanitizer::sanitize_bytes(input, &redaction_zones)
         .map_err(|e| JsValue::from_str(&e.to_string()))
+}
+
+/// Detect PII in text. Returns JSON string.
+#[wasm_bindgen]
+pub fn detect_pii_text(text: &str) -> String {
+    let matches = pii::detect_pii(text);
+    serde_json::to_string(&matches).unwrap_or_else(|_| "[]".into())
 }
 
 /// Audit image for reversibility. Returns JSON string.

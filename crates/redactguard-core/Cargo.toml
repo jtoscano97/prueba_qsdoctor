@@ -11,6 +11,9 @@ image = "0.25"
 # Cryptography (CSPRNG for redaction)
 rand = "0.8"
 rand_chacha = "0.3"
+# PII detection
+regex = "1.10"
+serde = { version = "1.0", features = ["derive"] }
 # PDF (future)
 # lopdf = "0.32"
 # Secure memory

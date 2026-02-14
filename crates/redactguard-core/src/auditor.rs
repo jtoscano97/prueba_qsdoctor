@@ -72,34 +72,10 @@ impl ReversibilityAnalyzer {
         Ok(AuditResult { score, findings, heatmap })
     }
 
-    /// Compute local entropy in 8x8 blocks. Low entropy may indicate reversible patterns.
+    /// Analyze image from file path.
     pub fn analyze_image(path: &Path) -> Result<AuditResult, Box<dyn std::error::Error>> {
-        let img = image::open(path)?.to_luma8();
-        let (width, height) = img.dimensions();
-        let mut findings = Vec::new();
-        let mut max_low_entropy = 0.0f64;
-
-        const BLOCK: u32 = 8;
-        for y in (0..height).step_by(BLOCK as usize) {
-            for x in (0..width).step_by(BLOCK as usize) {
-                let ent = block_entropy(&img, x, y, BLOCK);
-                if ent < 2.0 && ent > 0.0 {
-                    max_low_entropy = max_low_entropy.max(1.0 - ent / 2.0);
-                }
-            }
-        }
-
-        let score = (max_low_entropy * 100.0).min(100.0);
-        if score > 50.0 {
-            findings.push(Finding {
-                severity: Severity::High,
-                message: "Low entropy zones detected — possible reversible redaction (pixelation/blur)".into(),
-                x: None,
-                y: None,
-            });
-        }
-
-        Ok(AuditResult { score, findings, heatmap: vec![] })
+        let data = std::fs::read(path)?;
+        Self::analyze_bytes(&data)
     }
 }
 

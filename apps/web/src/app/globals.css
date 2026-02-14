@@ -230,6 +230,27 @@ body {
   margin-bottom: 0.5rem;
 }
 
+.zone-actions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.zone-actions button {
+  background: var(--border);
+  border: none;
+  color: var(--accent-green);
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.zone-actions button:hover {
+  background: rgba(0, 255, 136, 0.2);
+}
+
 .zone-item code {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.75rem;
@@ -382,16 +403,19 @@ body {
 
 /* Animation - scan line */
 @keyframes scan-line {
-  0% { transform: translateY(-100%); }
-  100% { transform: translateY(100vh); }
+  0% { transform: translateY(-100%); opacity: 1; }
+  100% { transform: translateY(100vh); opacity: 1; }
 }
 
 .scan-line {
   position: fixed;
   left: 0;
   right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--accent-green), transparent);
-  animation: scan-line 2s ease-in-out;
+  top: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--accent-green) 50%, transparent);
+  box-shadow: 0 0 20px var(--accent-green);
+  animation: scan-line 2s ease-in-out forwards;
   pointer-events: none;
+  z-index: 9999;
 }

@@ -34,6 +34,9 @@ coverage/
 # Tauri
 apps/desktop/src-tauri/target/
 
+# CLI binary (built by build:cli)
+apps/cli/bin/
+
 # Temporary files (critical for RedactGuard - never commit sensitive temp)
 tmp/
 temp/

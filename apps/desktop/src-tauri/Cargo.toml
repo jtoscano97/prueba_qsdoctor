@@ -10,7 +10,7 @@ tauri-build = { version = "2", features = [] }
 [dependencies]
 tauri = { version = "2", features = [] }
 tauri-plugin-shell = "2"
-# redactguard-core = { path = "../../../crates/redactguard-core" }  # Enable when building desktop
+# redactguard-core integrated via webview (loads web app). Native core requires Rust 1.88+.
 
 [features]
 default = ["custom-protocol"]
