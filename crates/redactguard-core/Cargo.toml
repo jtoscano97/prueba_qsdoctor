@@ -21,8 +21,7 @@ lopdf = { version = "0.35", optional = true }
 default = ["pdf"]
 pdf = ["dep:lopdf"]
 fft = ["dep:rustfft"]
-# Secure memory
-# memsec = "0.6"
+# memsec for secure zero - optional, use manual zero as fallback
 
 [dev-dependencies]
 tempfile = "3.10"

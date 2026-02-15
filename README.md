@@ -61,11 +61,15 @@ npm run build:cli
 npm run cli -- audit ./imagen.png
 npm run cli -- audit ./imagen.png --json --exit-on-fail  # CI
 
-# Sanitizar con zonas (x,y,w,h; x,y,w,h para múltiples)
+# Sanitizar con zonas
 npm run cli -- sanitize input.png output.png -z "10,20,100,40"
+npm run cli -- sanitize input.png output.png -c redactguard.config.yaml
 
 # Eliminar metadatos de PDF
 npm run cli -- pdf-strip documento.pdf documento_limpio.pdf
+
+# Docker
+docker build -t redactguard-web . && docker run -p 3000:3000 redactguard-web
 ```
 
 ### Web (Next.js + WASM)

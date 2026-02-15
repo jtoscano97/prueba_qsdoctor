@@ -37,6 +37,9 @@ apps/desktop/src-tauri/target/
 # CLI binary (built by build:cli)
 apps/cli/bin/
 
+# Local policy config (use .example as template)
+redactguard.config.yaml
+
 # Temporary files (critical for RedactGuard - never commit sensitive temp)
 tmp/
 temp/

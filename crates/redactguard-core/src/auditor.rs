@@ -36,7 +36,9 @@ pub struct ReversibilityAnalyzer;
 impl ReversibilityAnalyzer {
     /// Analyze image from bytes. For WASM/browser.
     pub fn analyze_bytes(input: &[u8]) -> Result<AuditResult, Box<dyn std::error::Error>> {
-        let img = image::load_from_memory(input)?.to_luma8();
+        let dynamic = image::load_from_memory(input)?;
+        let has_semi_transparent = check_semi_transparent(&dynamic);
+        let img = dynamic.to_luma8();
         let (width, height) = img.dimensions();
         let mut findings = Vec::new();
         let mut max_low_entropy = 0.0f64;
@@ -79,6 +81,14 @@ impl ReversibilityAnalyzer {
                 y: None,
             });
         }
+        if has_semi_transparent {
+            findings.push(Finding {
+                severity: Severity::High,
+                message: "Semi-transparent regions (alpha < 100%) detected — content may be visible underneath.".into(),
+                x: None,
+                y: None,
+            });
+        }
 
         Ok(AuditResult { score, findings, heatmap })
     }
@@ -88,6 +98,20 @@ impl ReversibilityAnalyzer {
         let data = std::fs::read(path)?;
         Self::analyze_bytes(&data)
     }
+}
+
+fn check_semi_transparent(img: &image::DynamicImage) -> bool {
+    let rgba = img.to_rgba8();
+    let (w, h) = rgba.dimensions();
+    for y in 0..h {
+        for x in 0..w {
+            let p = rgba.get_pixel(x, y);
+            if p[3] > 0 && p[3] < 255 {
+                return true;
+            }
+        }
+    }
+    false
 }
 
 #[cfg(feature = "fft")]

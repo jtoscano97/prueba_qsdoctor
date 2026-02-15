@@ -2,6 +2,20 @@
 
 use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
+use serde::Deserialize;
+
+#[derive(Deserialize)]
+struct ConfigZone {
+    x: u32,
+    y: u32,
+    width: u32,
+    height: u32,
+}
+
+#[derive(Deserialize)]
+struct ConfigFile {
+    zones: Option<Vec<ConfigZone>>,
+}
 use redactguard_core::{
     auditor::ReversibilityAnalyzer,
     pdf::{is_pdf, strip_pdf_metadata},
@@ -32,6 +46,9 @@ enum Commands {
         /// Zones as x,y,w,h (semicolon-separated: 10,20,100,30;50,60,80,40)
         #[arg(short, long)]
         zones: Option<String>,
+        /// Policy config file (YAML) with zones
+        #[arg(short, long)]
+        config: Option<PathBuf>,
     },
     /// Strip metadata from PDF (Info, Metadata)
     PdfStrip {
@@ -66,21 +83,33 @@ fn main() -> Result<()> {
             }
             }
         }
-        Commands::Sanitize { input, output, zones } => {
+        Commands::Sanitize { input, output, zones, config } => {
             let data = std::fs::read(&input).context("Failed to read input")?;
-            let zones_parsed: Vec<RedactionZone> = zones
-                .as_deref()
-                .unwrap_or("")
-                .split(';')
-                .filter_map(|s| {
-                    let parts: Vec<u32> = s.split(',').filter_map(|p| p.trim().parse().ok()).collect();
-                    if parts.len() == 4 {
-                        Some(RedactionZone { x: parts[0], y: parts[1], width: parts[2], height: parts[3] })
-                    } else {
-                        None
-                    }
-                })
-                .collect();
+            let zones_parsed: Vec<RedactionZone> = if let Some(config_path) = config {
+                let content = std::fs::read_to_string(&config_path)
+                    .context("Failed to read config file")?;
+                let cfg: ConfigFile = serde_yaml::from_str(&content)
+                    .context("Invalid YAML config")?;
+                cfg.zones
+                    .unwrap_or_default()
+                    .into_iter()
+                    .map(|z| RedactionZone { x: z.x, y: z.y, width: z.width, height: z.height })
+                    .collect()
+            } else {
+                zones
+                    .as_deref()
+                    .unwrap_or("")
+                    .split(';')
+                    .filter_map(|s| {
+                        let parts: Vec<u32> = s.split(',').filter_map(|p| p.trim().parse().ok()).collect();
+                        if parts.len() == 4 {
+                            Some(RedactionZone { x: parts[0], y: parts[1], width: parts[2], height: parts[3] })
+                        } else {
+                            None
+                        }
+                    })
+                    .collect()
+            };
             let out = ImageSanitizer::sanitize_bytes(&data, &zones_parsed)
                 .map_err(|e| anyhow::anyhow!("{}", e))?;
             std::fs::write(&output, &out).context("Failed to write output")?;

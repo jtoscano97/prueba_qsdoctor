@@ -1,9 +1,14 @@
-//! Secure memory handling: overwrite on drop to reduce exposure.
+//! Secure memory handling: overwrite on drop (DoD 5220.22-M style).
 
-/// Overwrite bytes with zeros before use. Best-effort; compiler may optimize away.
+/// Overwrite bytes with zeros. Volatile to reduce optimizer removal.
 #[inline(never)]
 pub fn secure_zero(bytes: &mut [u8]) {
-    bytes.fill(0);
+    use std::ptr::write_volatile;
+    let len = bytes.len();
+    let ptr = bytes.as_mut_ptr();
+    for i in 0..len {
+        unsafe { write_volatile(ptr.add(i), 0u8) };
+    }
 }
 
 /// Wrapper that zeros memory on drop.

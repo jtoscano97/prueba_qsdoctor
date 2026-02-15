@@ -82,10 +82,12 @@ program
   .command('sanitize <input> <output>')
   .description('Sanitize file with irreversible redaction')
   .option('-z, --zones <coords>', 'Zones as x,y,w,h (semicolon-separated)', '')
-  .action(async (input: string, output: string, opts: { zones?: string }) => {
+  .option('-c, --config <path>', 'Policy YAML with zones (see redactguard.config.example.yaml)', '')
+  .action(async (input: string, output: string, opts: { zones?: string; config?: string }) => {
     try {
       const args = ['sanitize', path.resolve(input), path.resolve(output)];
       if (opts.zones) args.push('--zones', opts.zones);
+      if (opts.config) args.push('--config', path.resolve(opts.config));
       const { stdout, stderr, code } = await runBinary(args);
       if (stderr) process.stderr.write(stderr);
       process.stdout.write(stdout);
