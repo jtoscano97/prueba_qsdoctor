@@ -1,8 +1,11 @@
 //! Zero-Trust Auditor — detect reversible redactions.
-//! Entropy analysis, Fourier-based pattern detection.
+//! Entropy, variance, and optional FFT analysis.
 
 use image::Luma;
 use std::path::Path;
+
+#[cfg(feature = "fft")]
+use rustfft::{FftPlanner, num_complex::Complex};
 
 /// Result of reversibility analysis
 #[derive(Debug, Clone)]
@@ -54,6 +57,11 @@ impl ReversibilityAnalyzer {
             }
         }
 
+        #[cfg(feature = "fft")]
+        let fft_risk = fft_pixelation_risk(&img);
+        #[cfg(feature = "fft")]
+        let max_low_entropy = max_low_entropy.max(fft_risk);
+
         let score = (max_low_entropy * 100.0).min(100.0);
         if score > 50.0 {
             findings.push(Finding {
@@ -80,6 +88,31 @@ impl ReversibilityAnalyzer {
         let data = std::fs::read(path)?;
         Self::analyze_bytes(&data)
     }
+}
+
+#[cfg(feature = "fft")]
+fn fft_pixelation_risk(img: &image::ImageBuffer<Luma<u8>, Vec<u8>>) -> f64 {
+    let (w, h) = img.dimensions();
+    let n = w as usize;
+    if n < 32 {
+        return 0.0;
+    }
+    let mut planner = FftPlanner::new();
+    let fft = planner.plan_fft_forward(n);
+    let mut buffer: Vec<Complex<f32>> = (0..n)
+        .map(|i| Complex::new(img.get_pixel(i as u32, h / 2)[0] as f32 / 255.0, 0.0))
+        .collect();
+    fft.process(&mut buffer);
+    let block_sizes = [8usize, 16, 32];
+    let mut max_mag = 0.0f32;
+    for &bs in &block_sizes {
+        if n >= bs {
+            let freq = n / bs;
+            let mag = buffer[freq].norm() + buffer[n - freq].norm();
+            max_mag = max_mag.max(mag);
+        }
+    }
+    (max_mag / (n as f32).sqrt()).min(1.0) as f64
 }
 
 fn block_variance(img: &image::ImageBuffer<Luma<u8>, Vec<u8>>, x: u32, y: u32, block: u32) -> f64 {

@@ -14,7 +14,13 @@ rand_chacha = "0.3"
 # PII detection
 regex = "1.10"
 serde = { version = "1.0", features = ["derive"] }
-# PDF: full support requires lopdf (pulls Rust 1.88). Stub for now.
+rustfft = { version = "6.2", optional = true }
+lopdf = { version = "0.35", optional = true }
+
+[features]
+default = ["pdf"]
+pdf = ["dep:lopdf"]
+fft = ["dep:rustfft"]
 # Secure memory
 # memsec = "0.6"
 

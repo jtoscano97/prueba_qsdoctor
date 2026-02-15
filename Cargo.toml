@@ -6,3 +6,6 @@ members = [
     "packages/redactguard-wasm"
 ]
 exclude = ["apps/desktop/src-tauri"]
+
+[patch.crates-io]
+time = { git = "https://github.com/time-rs/time", tag = "v0.3.36" }

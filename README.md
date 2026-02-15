@@ -13,7 +13,7 @@ RedactGuard erradica las filtraciones de datos causadas por redacciones defectuo
 ## Características
 
 - **Motor Ironclad**: Destrucción a nivel de bit con ruido criptográfico (CSPRNG). Cero interpolación.
-- **Zero-Trust Auditor**: Detección de redacciones reversibles (entropía, varianza por bloque).
+- **Zero-Trust Auditor**: Detección de redacciones reversibles (entropía, varianza, FFT).
 - **PII Heurístico**: Detección de email, teléfono, IBAN, DNI, SSN.
 - **100% Local**: Air-gapped by design. Sin llamadas a APIs externas.
 - **Cumplimiento**: GDPR, HIPAA, SOC2, CCPA.
@@ -63,6 +63,9 @@ npm run cli -- audit ./imagen.png --json --exit-on-fail  # CI
 
 # Sanitizar con zonas (x,y,w,h; x,y,w,h para múltiples)
 npm run cli -- sanitize input.png output.png -z "10,20,100,40"
+
+# Eliminar metadatos de PDF
+npm run cli -- pdf-strip documento.pdf documento_limpio.pdf
 ```
 
 ### Web (Next.js + WASM)
@@ -126,7 +129,7 @@ Ver [REDACTGUARD-TECHNICAL-MASTER-DOCUMENT.md](docs/REDACTGUARD-TECHNICAL-MASTER
 | Core | Rust (image, rand_chacha) |
 | Desktop | Tauri 2 + React + Vite |
 | Web | Next.js 14 |
-| CLI | TypeScript + Rust binary (redactguard-bin) |
+| CLI | TypeScript + Rust binary (audit, sanitize, pdf-strip) |
 
 ---
 

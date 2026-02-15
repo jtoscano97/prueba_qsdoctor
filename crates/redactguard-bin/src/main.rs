@@ -2,7 +2,11 @@
 
 use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
-use redactguard_core::{auditor::ReversibilityAnalyzer, sanitizer::{ImageSanitizer, RedactionZone}};
+use redactguard_core::{
+    auditor::ReversibilityAnalyzer,
+    pdf::{is_pdf, strip_pdf_metadata},
+    sanitizer::{ImageSanitizer, RedactionZone},
+};
 use std::path::PathBuf;
 
 #[derive(Parser)]
@@ -28,6 +32,11 @@ enum Commands {
         /// Zones as x,y,w,h (semicolon-separated: 10,20,100,30;50,60,80,40)
         #[arg(short, long)]
         zones: Option<String>,
+    },
+    /// Strip metadata from PDF (Info, Metadata)
+    PdfStrip {
+        input: PathBuf,
+        output: PathBuf,
     },
 }
 
@@ -76,6 +85,16 @@ fn main() -> Result<()> {
                 .map_err(|e| anyhow::anyhow!("{}", e))?;
             std::fs::write(&output, &out).context("Failed to write output")?;
             println!("✓ Sanitized: {} -> {}", input.display(), output.display());
+        }
+        Commands::PdfStrip { input, output } => {
+            let data = std::fs::read(&input).context("Failed to read input")?;
+            if !is_pdf(&data) {
+                anyhow::bail!("Not a valid PDF file");
+            }
+            let out = strip_pdf_metadata(&data)
+                .map_err(|e| anyhow::anyhow!("PDF strip failed: {}", e))?;
+            std::fs::write(&output, &out).context("Failed to write output")?;
+            println!("✓ PDF metadata stripped: {} -> {}", input.display(), output.display());
         }
     }
     Ok(())

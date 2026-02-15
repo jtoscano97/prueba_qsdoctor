@@ -63,6 +63,22 @@ program
   });
 
 program
+  .command('pdf-strip <input> <output>')
+  .description('Strip metadata from PDF file')
+  .action(async (input: string, output: string) => {
+    try {
+      const args = ['pdf-strip', path.resolve(input), path.resolve(output)];
+      const { stdout, stderr, code } = await runBinary(args);
+      if (stderr) process.stderr.write(stderr);
+      process.stdout.write(stdout);
+      process.exit(code ?? 0);
+    } catch (err) {
+      console.error(chalk.red('Error:'), err);
+      process.exit(1);
+    }
+  });
+
+program
   .command('sanitize <input> <output>')
   .description('Sanitize file with irreversible redaction')
   .option('-z, --zones <coords>', 'Zones as x,y,w,h (semicolon-separated)', '')
