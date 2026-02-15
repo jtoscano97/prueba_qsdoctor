@@ -16,7 +16,7 @@
     "cli": "node apps/cli/dist/index.js",
     "build:cli": "cargo build --release -p redactguard-bin && mkdir -p apps/cli/bin && (cp target/release/redactguard apps/cli/bin/ 2>/dev/null || cp target/release/redactguard.exe apps/cli/bin/ 2>/dev/null) && npm run build -w @redactguard/cli",
     "lint": "npm run lint --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present"
+    "test": "cargo test -p redactguard-core && npm run test --workspaces --if-present"
   },
   "keywords": [
     "redaction",
