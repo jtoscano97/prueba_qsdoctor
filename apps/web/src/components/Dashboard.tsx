@@ -6,7 +6,11 @@ import { ZoneEditor, type Zone } from './ZoneEditor';
 import { AuditResults } from './AuditResults';
 import { PiiScanner } from './PiiScanner';
 import { auditImage, sanitizeImage } from '@/lib/wasm';
-import { suggestZonesFromImage, suggestZonesFromAllText } from '@/lib/ocr-pii';
+import {
+  suggestZonesFromImage,
+  suggestZonesFromAllText,
+  suggestZonesViaApi,
+} from '@/lib/ocr-pii';
 
 type View = 'drop' | 'editor' | 'audit' | 'xray';
 
@@ -55,7 +59,10 @@ export function Dashboard() {
   const [suggestingOcr, setSuggestingOcr] = useState(false);
 
   const runOcrSuggest = useCallback(
-    async (fn: typeof suggestZonesFromImage | typeof suggestZonesFromAllText) => {
+    async (
+      mode: 'all' | 'pii',
+      fn: typeof suggestZonesFromImage | typeof suggestZonesFromAllText
+    ) => {
       if (!fileData) return;
       setSuggestingOcr(true);
       setError(null);
@@ -71,12 +78,20 @@ export function Dashboard() {
           img.onerror = rej;
           img.src = url;
         });
-        const suggested = await fn(
-          fileData.data,
-          img.naturalWidth,
-          img.naturalHeight,
-          fileData.file.type || 'image/png'
-        );
+
+        let suggested: { x: number; y: number; width: number; height: number }[];
+        try {
+          suggested = await fn(
+            fileData.data,
+            img.naturalWidth,
+            img.naturalHeight,
+            fileData.file.type || 'image/png'
+          );
+        } catch (clientErr) {
+          console.warn('[RedactGuard OCR] Navegador falló, usando servidor:', clientErr);
+          suggested = await suggestZonesViaApi(fileData.file, mode);
+        }
+
         const newZones: Zone[] = suggested.map((s) => ({
           id: crypto.randomUUID(),
           x: s.x,
@@ -96,8 +111,14 @@ export function Dashboard() {
     [fileData]
   );
 
-  const handleSuggestPii = useCallback(() => runOcrSuggest(suggestZonesFromImage), [runOcrSuggest]);
-  const handleSuggestAllText = useCallback(() => runOcrSuggest(suggestZonesFromAllText), [runOcrSuggest]);
+  const handleSuggestPii = useCallback(
+    () => runOcrSuggest('pii', suggestZonesFromImage),
+    [runOcrSuggest]
+  );
+  const handleSuggestAllText = useCallback(
+    () => runOcrSuggest('all', suggestZonesFromAllText),
+    [runOcrSuggest]
+  );
 
   const handleSanitize = useCallback(async () => {
     if (!fileData) return;
@@ -254,7 +275,7 @@ Policy: Manual zones`;
               showHeatmap={showHeatmap}
             />
             <p className="hint">
-              Haz clic en la imagen para añadir zonas manualmente. «Todo el texto» cubre todo lo que el OCR detecte; «Solo PII» solo emails, teléfonos, DNI, IBAN, etc.
+              Haz clic en la imagen para añadir zonas manualmente. «Todo el texto» cubre todo lo que el OCR detecte; «Solo PII» solo emails, teléfonos, DNI, IBAN, etc. Si el OCR falla en el navegador (p. ej. móvil), se usa el servidor automáticamente.
             </p>
             {error && (
               <p className="hint">

@@ -11,6 +11,26 @@ export interface SuggestedZone {
   text: string;
 }
 
+/** Fallback: OCR vía API del servidor cuando el navegador falla (p.ej. móvil) */
+export async function suggestZonesViaApi(
+  imageFile: File,
+  mode: 'all' | 'pii'
+): Promise<SuggestedZone[]> {
+  const formData = new FormData();
+  formData.append('image', imageFile);
+  formData.append('mode', mode);
+  const res = await fetch('/api/ocr', {
+    method: 'POST',
+    body: formData,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `API OCR: ${res.status}`);
+  }
+  const { zones } = await res.json();
+  return zones ?? [];
+}
+
 interface TessWord {
   text?: string;
   bbox?: { x0: number; y0: number; x1: number; y1: number };
