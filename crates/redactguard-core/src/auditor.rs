@@ -43,7 +43,10 @@ impl ReversibilityAnalyzer {
         for (by, y) in (0..height).step_by(BLOCK as usize).enumerate() {
             for (bx, x) in (0..width).step_by(BLOCK as usize).enumerate() {
                 let ent = block_entropy(&img, x, y, BLOCK);
-                let risk = if ent < 2.0 && ent > 0.0 { 1.0 - ent / 2.0 } else { 0.0 };
+                let var = block_variance(&img, x, y, BLOCK);
+                let risk_ent = if ent < 2.0 && ent > 0.0 { 1.0 - ent / 2.0 } else { 0.0 };
+                let risk_var = if var < 100.0 && var > 0.0 { 1.0 - var / 100.0 } else { 0.0 };
+                let risk = risk_ent.max(risk_var);
                 max_low_entropy = max_low_entropy.max(risk);
                 if by < heatmap.len() && bx < heatmap[0].len() {
                     heatmap[by][bx] = risk * 100.0;
@@ -77,6 +80,30 @@ impl ReversibilityAnalyzer {
         let data = std::fs::read(path)?;
         Self::analyze_bytes(&data)
     }
+}
+
+fn block_variance(img: &image::ImageBuffer<Luma<u8>, Vec<u8>>, x: u32, y: u32, block: u32) -> f64 {
+    let (w, h) = img.dimensions();
+    let mut sum = 0u64;
+    let mut sum_sq = 0u64;
+    let mut count = 0u32;
+    for dy in 0..block {
+        for dx in 0..block {
+            let px = x + dx;
+            let py = y + dy;
+            if px < w && py < h {
+                let v = img.get_pixel(px, py)[0] as u64;
+                sum += v;
+                sum_sq += v * v;
+                count += 1;
+            }
+        }
+    }
+    if count == 0 {
+        return 0.0;
+    }
+    let mean = sum as f64 / count as f64;
+    (sum_sq as f64 / count as f64) - (mean * mean)
 }
 
 fn block_entropy(img: &image::ImageBuffer<Luma<u8>, Vec<u8>>, x: u32, y: u32, block: u32) -> f64 {

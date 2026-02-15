@@ -401,6 +401,115 @@ body {
   font-size: 0.75rem;
 }
 
+/* PII Scanner */
+.pii-scanner {
+  max-width: 600px;
+  margin: 2rem auto 0;
+  padding: 1.5rem;
+  background: var(--bg-charcoal);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.pii-scanner h4 {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.pii-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.pii-scanner textarea {
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--bg-obsidian);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.875rem;
+  resize: vertical;
+}
+
+.btn-scan {
+  margin-top: 0.75rem;
+  background: var(--accent-green);
+  color: var(--bg-obsidian);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-scan:disabled {
+  opacity: 0.5;
+}
+
+.pii-results {
+  margin-top: 1rem;
+}
+
+.pii-count {
+  font-size: 0.875rem;
+  color: var(--accent-yellow);
+  margin-bottom: 0.5rem;
+}
+
+.pii-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.pii-tag {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.pii-email { background: rgba(255, 51, 102, 0.3); }
+.pii-phone { background: rgba(255, 153, 51, 0.3); }
+.pii-iban { background: rgba(255, 204, 0, 0.3); }
+.pii-dni_es { background: rgba(255, 51, 102, 0.3); }
+.pii-ssn_us { background: rgba(255, 51, 102, 0.3); }
+
+/* Proof panel */
+.proof-panel {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: var(--bg-charcoal);
+  border: 1px solid var(--accent-green);
+  border-radius: 8px;
+}
+
+.proof-panel h4 {
+  font-size: 0.875rem;
+  color: var(--accent-green);
+  margin-bottom: 0.5rem;
+}
+
+.proof-panel pre {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  overflow-x: auto;
+  margin-bottom: 0.75rem;
+}
+
+.proof-panel button {
+  background: var(--accent-green);
+  color: var(--bg-obsidian);
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
 /* Animation - scan line */
 @keyframes scan-line {
   0% { transform: translateY(-100%); opacity: 1; }

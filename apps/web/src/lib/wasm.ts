@@ -21,3 +21,9 @@ export async function sanitizeImage(
   const mod = await initWasm();
   return mod.sanitize_image(input, JSON.stringify(zones));
 }
+
+export async function detectPiiInText(text: string): Promise<{ kind: string; start: number; end: number }[]> {
+  const mod = await initWasm();
+  const json = mod.detect_pii_text(text);
+  return JSON.parse(json);
+}

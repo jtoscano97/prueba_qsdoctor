@@ -13,7 +13,8 @@ RedactGuard erradica las filtraciones de datos causadas por redacciones defectuo
 ## Características
 
 - **Motor Ironclad**: Destrucción a nivel de bit con ruido criptográfico (CSPRNG). Cero interpolación.
-- **Zero-Trust Auditor**: Detección de redacciones reversibles mediante análisis de entropía y FFT.
+- **Zero-Trust Auditor**: Detección de redacciones reversibles (entropía, varianza por bloque).
+- **PII Heurístico**: Detección de email, teléfono, IBAN, DNI, SSN.
 - **100% Local**: Air-gapped by design. Sin llamadas a APIs externas.
 - **Cumplimiento**: GDPR, HIPAA, SOC2, CCPA.
 
@@ -76,9 +77,10 @@ npm run dev:web
 Abre [http://localhost:3000](http://localhost:3000)
 
 - Drop zone: arrastrar, pegar desde portapapeles
-- Click en imagen para añadir zonas de redacción
-- **Auditar**: detección de reversibilidad (entropía)
-- **Sanitizar**: destrucción criptográfica → descarga PNG
+- **PII Scanner**: pega texto para detectar emails, teléfonos, IBAN, DNI, SSN
+- Click en imagen para añadir zonas; arrastra para mover; +/- para redimensionar
+- **Auditar**: detección de reversibilidad (entropía + varianza)
+- **Sanitizar**: destrucción criptográfica, certificado SHA-256, anti-esteganografía LSB
 
 ### Desktop (Tauri)
 

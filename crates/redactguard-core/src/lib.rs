@@ -6,6 +6,7 @@ pub mod sanitizer;
 pub mod auditor;
 pub mod pii;
 pub mod secure;
+pub mod pdf;
 
 pub use sanitizer::ImageSanitizer;
 pub use auditor::ReversibilityAnalyzer;

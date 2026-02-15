@@ -64,12 +64,28 @@ impl ImageSanitizer {
     }
 
     /// Sanitize image from bytes, return sanitized bytes. For WASM/browser.
-    /// Output is PNG: EXIF/XMP/ICC from input are stripped (re-encode discards metadata).
+    /// Output is PNG: EXIF/XMP/ICC stripped. LSB normalized (anti-steganography).
     pub fn sanitize_bytes(input: &[u8], zones: &[RedactionZone]) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
         let mut img = image::load_from_memory(input)?;
         Self::sanitize_zones(&mut img, zones, None);
+        Self::normalize_lsb(&mut img);
         let mut output = Vec::new();
         img.write_to(&mut Cursor::new(&mut output), ImageFormat::Png)?;
         Ok(output)
+    }
+
+    /// Quantize RGB channels to eliminate LSB steganography. Clears low 2 bits.
+    fn normalize_lsb(img: &mut DynamicImage) {
+        use image::GenericImage;
+        let (w, h) = img.dimensions();
+        for y in 0..h {
+            for x in 0..w {
+                let mut p = img.get_pixel(x, y);
+                p[0] &= 0xFC;
+                p[1] &= 0xFC;
+                p[2] &= 0xFC;
+                img.put_pixel(x, y, p);
+            }
+        }
     }
 }

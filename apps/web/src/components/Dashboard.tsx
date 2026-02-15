@@ -4,6 +4,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { DropZone, type FileDrop } from './DropZone';
 import { ZoneEditor, type Zone } from './ZoneEditor';
 import { AuditResults } from './AuditResults';
+import { PiiScanner } from './PiiScanner';
 import { auditImage, sanitizeImage } from '@/lib/wasm';
 
 type View = 'drop' | 'editor' | 'audit' | 'xray';
@@ -49,6 +50,7 @@ export function Dashboard() {
   }, [fileData]);
 
   const [showScanAnim, setShowScanAnim] = useState(false);
+  const [lastCert, setLastCert] = useState<string | null>(null);
 
   const handleSanitize = useCallback(async () => {
     if (!fileData) return;
@@ -59,12 +61,26 @@ export function Dashboard() {
     try {
       const zonePayload = zones.map((z) => ({ x: z.x, y: z.y, width: z.width, height: z.height }));
       const result = await sanitizeImage(new Uint8Array(fileData.data), zonePayload);
-      const blob = new Blob([new Uint8Array(result)], { type: 'image/png' });
+      const resultArr = new Uint8Array(result);
+      const blob = new Blob([resultArr], { type: 'image/png' });
       const url = URL.createObjectURL(blob);
+      const hashBuf = await crypto.subtle.digest('SHA-256', resultArr);
+      const hashHex = Array.from(new Uint8Array(hashBuf))
+        .map((b) => b.toString(16).padStart(2, '0'))
+        .join('');
+      const cert = `RedactGuard Sanitization Certificate
+File: ${fileData.file.name}
+Date: ${new Date().toISOString()}
+SHA-256: ${hashHex}
+Policy: Manual zones`;
+      setLastCert(cert);
       const a = document.createElement('a');
       a.href = url;
       a.download = `redactguard_${fileData.file.name.replace(/\.[^.]+$/, '')}.png`;
       a.click();
+      if (navigator.clipboard?.writeText) {
+        navigator.clipboard.writeText(cert).catch(() => {});
+      }
       URL.revokeObjectURL(url);
       setView('editor');
     } catch (e) {
@@ -104,6 +120,7 @@ export function Dashboard() {
         {view === 'drop' && (
           <>
             <DropZone onFile={handleFile} />
+            <PiiScanner />
             <div className="status">
               <span className="badge-safe">● Procesamiento en navegador (WASM)</span>
             </div>
@@ -146,6 +163,15 @@ export function Dashboard() {
               showHeatmap={showHeatmap}
             />
             <p className="hint">Haz clic en la imagen para añadir zonas de redacción.</p>
+            {lastCert && (
+              <div className="proof-panel">
+                <h4>Certificado de sanitización</h4>
+                <pre>{lastCert}</pre>
+                <button type="button" onClick={() => { navigator.clipboard?.writeText(lastCert ?? ''); setLastCert(null); }}>
+                  Copiar y cerrar
+                </button>
+              </div>
+            )}
           </div>
         )}
 
