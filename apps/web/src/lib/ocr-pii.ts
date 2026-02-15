@@ -63,6 +63,48 @@ export async function suggestZonesFromImage(
   return mergeOverlappingZones(suggestedZones);
 }
 
+/**
+ * OCR: Extrae TODO el texto de la imagen y devuelve zonas que cubren cada palabra.
+ * Sirve para redactar la imagen por completo (todo el texto detectado).
+ */
+export async function suggestZonesFromAllText(
+  imageData: ArrayBuffer,
+  imageWidth: number,
+  imageHeight: number
+): Promise<SuggestedZone[]> {
+  const Tesseract = (await import('tesseract.js')).default;
+  const { data } = await Tesseract.recognize(
+    new Blob([imageData]),
+    'spa+eng',
+    { logger: () => {} }
+  );
+
+  const words = (data.words ?? []) as TessWord[];
+  const suggestedZones: SuggestedZone[] = [];
+
+  for (const word of words) {
+    const wordText = (word.text ?? '').trim();
+    if (!wordText) continue;
+
+    const bbox = word.bbox ?? word.box;
+    if (!bbox || bbox.x0 == null) continue;
+
+    const x = Math.max(0, Math.round(bbox.x0));
+    const y = Math.max(0, Math.round(bbox.y0));
+    const w = Math.min(imageWidth - x, Math.max(1, Math.round((bbox.x1 ?? bbox.x0) - bbox.x0)));
+    const h = Math.min(imageHeight - y, Math.max(1, Math.round((bbox.y1 ?? bbox.y0) - bbox.y0)));
+    if (w <= 0 || h <= 0) continue;
+
+    suggestedZones.push({
+      x, y, width: w, height: h,
+      kind: 'text',
+      text: wordText,
+    });
+  }
+
+  return mergeOverlappingZones(suggestedZones);
+}
+
 function mergeOverlappingZones(zones: SuggestedZone[]): SuggestedZone[] {
   if (zones.length <= 1) return zones;
   const merged: SuggestedZone[] = [];

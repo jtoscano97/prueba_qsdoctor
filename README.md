@@ -85,7 +85,8 @@ Abre [http://localhost:3000](http://localhost:3000)
 
 - Drop zone: arrastrar, pegar desde portapapeles
 - **PII Scanner**: pega texto para detectar emails, teléfonos, IBAN, DNI, SSN
-- **Buscar PII en imagen**: OCR (Tesseract) + detección de PII para sugerir zonas automáticamente
+- **Todo el texto**: OCR de la imagen → zonas sobre todo el texto detectado (cubrir documento completo)
+- **Solo PII**: OCR + filtro de datos sensibles (email, teléfono, DNI, IBAN) para sugerir solo esas zonas
 - Click en imagen para añadir zonas manualmente; arrastra para mover; +/- para redimensionar
 - **Auditar**: detección de reversibilidad (entropía + varianza)
 - **Sanitizar**: destrucción criptográfica, certificado SHA-256, anti-esteganografía LSB

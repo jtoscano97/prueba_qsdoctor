@@ -164,6 +164,20 @@ body {
   background: rgba(255, 153, 51, 0.1);
 }
 
+.btn-suggest-all {
+  background: var(--bg-charcoal);
+  border: 1px solid var(--accent-green);
+  color: var(--accent-green);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.btn-suggest-all:hover:not(:disabled) {
+  background: rgba(0, 255, 136, 0.1);
+}
+
 .btn-audit {
   background: var(--bg-charcoal);
   border: 1px solid var(--accent-yellow);
@@ -191,7 +205,8 @@ body {
 
 .btn-sanitize:disabled,
 .btn-audit:disabled,
-.btn-suggest-pii:disabled {
+.btn-suggest-pii:disabled,
+.btn-suggest-all:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }

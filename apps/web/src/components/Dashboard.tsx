@@ -6,7 +6,7 @@ import { ZoneEditor, type Zone } from './ZoneEditor';
 import { AuditResults } from './AuditResults';
 import { PiiScanner } from './PiiScanner';
 import { auditImage, sanitizeImage } from '@/lib/wasm';
-import { suggestZonesFromImage } from '@/lib/ocr-pii';
+import { suggestZonesFromImage, suggestZonesFromAllText } from '@/lib/ocr-pii';
 
 type View = 'drop' | 'editor' | 'audit' | 'xray';
 
@@ -52,43 +52,45 @@ export function Dashboard() {
 
   const [showScanAnim, setShowScanAnim] = useState(false);
   const [lastCert, setLastCert] = useState<string | null>(null);
-  const [suggestingPii, setSuggestingPii] = useState(false);
+  const [suggestingOcr, setSuggestingOcr] = useState(false);
 
-  const handleSuggestPii = useCallback(async () => {
-    if (!fileData) return;
-    setSuggestingPii(true);
-    setError(null);
-    try {
-      const img = new Image();
-      const blob = new Blob([fileData.data], { type: fileData.file.type });
-      const url = URL.createObjectURL(blob);
-      await new Promise<void>((res, rej) => {
-        img.onload = () => {
-          URL.revokeObjectURL(url);
-          res();
-        };
-        img.onerror = rej;
-        img.src = url;
-      });
-      const suggested = await suggestZonesFromImage(
-        fileData.data,
-        img.naturalWidth,
-        img.naturalHeight
-      );
-      const newZones: Zone[] = suggested.map((s) => ({
-        id: crypto.randomUUID(),
-        x: s.x,
-        y: s.y,
-        width: s.width,
-        height: s.height,
-      }));
-      setZones((prev) => [...prev, ...newZones]);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error al detectar PII en imagen');
-    } finally {
-      setSuggestingPii(false);
-    }
-  }, [fileData]);
+  const runOcrSuggest = useCallback(
+    async (fn: typeof suggestZonesFromImage | typeof suggestZonesFromAllText) => {
+      if (!fileData) return;
+      setSuggestingOcr(true);
+      setError(null);
+      try {
+        const img = new Image();
+        const blob = new Blob([fileData.data], { type: fileData.file.type });
+        const url = URL.createObjectURL(blob);
+        await new Promise<void>((res, rej) => {
+          img.onload = () => {
+            URL.revokeObjectURL(url);
+            res();
+          };
+          img.onerror = rej;
+          img.src = url;
+        });
+        const suggested = await fn(fileData.data, img.naturalWidth, img.naturalHeight);
+        const newZones: Zone[] = suggested.map((s) => ({
+          id: crypto.randomUUID(),
+          x: s.x,
+          y: s.y,
+          width: s.width,
+          height: s.height,
+        }));
+        setZones((prev) => [...prev, ...newZones]);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Error al analizar imagen');
+      } finally {
+        setSuggestingOcr(false);
+      }
+    },
+    [fileData]
+  );
+
+  const handleSuggestPii = useCallback(() => runOcrSuggest(suggestZonesFromImage), [runOcrSuggest]);
+  const handleSuggestAllText = useCallback(() => runOcrSuggest(suggestZonesFromAllText), [runOcrSuggest]);
 
   const handleSanitize = useCallback(async () => {
     if (!fileData) return;
@@ -176,11 +178,20 @@ Policy: Manual zones`;
                 <button
                   type="button"
                   onClick={handleSuggestPii}
-                  disabled={loading || suggestingPii}
+                  disabled={loading || suggestingOcr}
                   className="btn-suggest-pii"
                   title="OCR + detección de PII (email, teléfono, DNI, IBAN, etc.)"
                 >
-                  {suggestingPii ? 'Buscando PII…' : 'Buscar PII en imagen'}
+                  {suggestingOcr ? 'Analizando…' : 'Solo PII'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSuggestAllText}
+                  disabled={loading || suggestingOcr}
+                  className="btn-suggest-all"
+                  title="OCR de todo el texto: crea zonas sobre cada palabra detectada"
+                >
+                  {suggestingOcr ? 'Analizando…' : 'Todo el texto'}
                 </button>
                 <button
                   type="button"
@@ -210,7 +221,7 @@ Policy: Manual zones`;
               showHeatmap={showHeatmap}
             />
             <p className="hint">
-              Haz clic en la imagen para añadir zonas de redacción, o usa «Buscar PII en imagen» para detectar automáticamente datos sensibles (email, teléfono, DNI, IBAN, etc.).
+              Haz clic en la imagen para añadir zonas manualmente. «Todo el texto» cubre todo lo que el OCR detecte; «Solo PII» solo emails, teléfonos, DNI, IBAN, etc.
             </p>
             {lastCert && (
               <div className="proof-panel">
