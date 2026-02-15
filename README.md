@@ -85,7 +85,8 @@ Abre [http://localhost:3000](http://localhost:3000)
 
 - Drop zone: arrastrar, pegar desde portapapeles
 - **PII Scanner**: pega texto para detectar emails, teléfonos, IBAN, DNI, SSN
-- Click en imagen para añadir zonas; arrastra para mover; +/- para redimensionar
+- **Buscar PII en imagen**: OCR (Tesseract) + detección de PII para sugerir zonas automáticamente
+- Click en imagen para añadir zonas manualmente; arrastra para mover; +/- para redimensionar
 - **Auditar**: detección de reversibilidad (entropía + varianza)
 - **Sanitizar**: destrucción criptográfica, certificado SHA-256, anti-esteganografía LSB
 

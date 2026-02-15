@@ -6,6 +6,7 @@ import { ZoneEditor, type Zone } from './ZoneEditor';
 import { AuditResults } from './AuditResults';
 import { PiiScanner } from './PiiScanner';
 import { auditImage, sanitizeImage } from '@/lib/wasm';
+import { suggestZonesFromImage } from '@/lib/ocr-pii';
 
 type View = 'drop' | 'editor' | 'audit' | 'xray';
 
@@ -51,6 +52,43 @@ export function Dashboard() {
 
   const [showScanAnim, setShowScanAnim] = useState(false);
   const [lastCert, setLastCert] = useState<string | null>(null);
+  const [suggestingPii, setSuggestingPii] = useState(false);
+
+  const handleSuggestPii = useCallback(async () => {
+    if (!fileData) return;
+    setSuggestingPii(true);
+    setError(null);
+    try {
+      const img = new Image();
+      const blob = new Blob([fileData.data], { type: fileData.file.type });
+      const url = URL.createObjectURL(blob);
+      await new Promise<void>((res, rej) => {
+        img.onload = () => {
+          URL.revokeObjectURL(url);
+          res();
+        };
+        img.onerror = rej;
+        img.src = url;
+      });
+      const suggested = await suggestZonesFromImage(
+        fileData.data,
+        img.naturalWidth,
+        img.naturalHeight
+      );
+      const newZones: Zone[] = suggested.map((s) => ({
+        id: crypto.randomUUID(),
+        x: s.x,
+        y: s.y,
+        width: s.width,
+        height: s.height,
+      }));
+      setZones((prev) => [...prev, ...newZones]);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Error al detectar PII en imagen');
+    } finally {
+      setSuggestingPii(false);
+    }
+  }, [fileData]);
 
   const handleSanitize = useCallback(async () => {
     if (!fileData) return;
@@ -137,6 +175,15 @@ Policy: Manual zones`;
               <div className="toolbar-actions">
                 <button
                   type="button"
+                  onClick={handleSuggestPii}
+                  disabled={loading || suggestingPii}
+                  className="btn-suggest-pii"
+                  title="OCR + detección de PII (email, teléfono, DNI, IBAN, etc.)"
+                >
+                  {suggestingPii ? 'Buscando PII…' : 'Buscar PII en imagen'}
+                </button>
+                <button
+                  type="button"
                   onClick={handleAudit}
                   disabled={loading}
                   className="btn-audit"
@@ -162,7 +209,9 @@ Policy: Manual zones`;
               heatmap={auditResult?.heatmap ?? []}
               showHeatmap={showHeatmap}
             />
-            <p className="hint">Haz clic en la imagen para añadir zonas de redacción.</p>
+            <p className="hint">
+              Haz clic en la imagen para añadir zonas de redacción, o usa «Buscar PII en imagen» para detectar automáticamente datos sensibles (email, teléfono, DNI, IBAN, etc.).
+            </p>
             {lastCert && (
               <div className="proof-panel">
                 <h4>Certificado de sanitización</h4>

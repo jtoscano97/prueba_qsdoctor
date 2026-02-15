@@ -150,6 +150,20 @@ body {
   gap: 1rem;
 }
 
+.btn-suggest-pii {
+  background: var(--bg-charcoal);
+  border: 1px solid var(--accent-orange);
+  color: var(--accent-orange);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.btn-suggest-pii:hover:not(:disabled) {
+  background: rgba(255, 153, 51, 0.1);
+}
+
 .btn-audit {
   background: var(--bg-charcoal);
   border: 1px solid var(--accent-yellow);
@@ -176,7 +190,8 @@ body {
 }
 
 .btn-sanitize:disabled,
-.btn-audit:disabled {
+.btn-audit:disabled,
+.btn-suggest-pii:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
