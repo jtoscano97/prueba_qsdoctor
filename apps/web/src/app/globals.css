@@ -223,6 +223,16 @@ body {
   color: var(--text-muted);
 }
 
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--accent-green);
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: inherit;
+  padding: 0;
+}
+
 /* Zone Editor */
 .zone-editor {
   display: grid;

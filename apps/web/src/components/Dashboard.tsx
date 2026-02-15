@@ -71,7 +71,12 @@ export function Dashboard() {
           img.onerror = rej;
           img.src = url;
         });
-        const suggested = await fn(fileData.data, img.naturalWidth, img.naturalHeight);
+        const suggested = await fn(
+          fileData.data,
+          img.naturalWidth,
+          img.naturalHeight,
+          fileData.file.type || 'image/png'
+        );
         const newZones: Zone[] = suggested.map((s) => ({
           id: crypto.randomUUID(),
           x: s.x,
@@ -81,7 +86,9 @@ export function Dashboard() {
         }));
         setZones((prev) => [...prev, ...newZones]);
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'Error al analizar imagen');
+        const msg = e instanceof Error ? e.message : 'Error al analizar imagen';
+        console.error('[RedactGuard OCR]', e);
+        setError(msg);
       } finally {
         setSuggestingOcr(false);
       }
@@ -140,6 +147,26 @@ Policy: Manual zones`;
     }
   };
 
+  const handleLoadTestImage = useCallback(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 400;
+    canvas.height = 100;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, 400, 100);
+    ctx.fillStyle = '#000';
+    ctx.font = '24px sans-serif';
+    ctx.fillText('FURIA Training Club', 20, 40);
+    ctx.fillText('FUERZA EMOM EXTRA', 20, 75);
+    canvas.toBlob(async (blob) => {
+      if (!blob) return;
+      const data = await blob.arrayBuffer();
+      const file = new File([blob], 'test-ocr.png', { type: 'image/png' });
+      handleFile({ file, data });
+    }, 'image/png');
+  }, [handleFile]);
+
   const imageUrl = useMemo(
     () => (fileData ? URL.createObjectURL(fileData.file) : ''),
     [fileData]
@@ -160,6 +187,12 @@ Policy: Manual zones`;
         {view === 'drop' && (
           <>
             <DropZone onFile={handleFile} />
+            <p className="hint" style={{ marginTop: '0.5rem' }}>
+              <button type="button" className="link-btn" onClick={handleLoadTestImage}>
+                Probar con imagen de ejemplo
+              </button>{' '}
+              (si el OCR falla en tu móvil)
+            </p>
             <PiiScanner />
             <div className="status">
               <span className="badge-safe">● Procesamiento en navegador (WASM)</span>
@@ -223,6 +256,15 @@ Policy: Manual zones`;
             <p className="hint">
               Haz clic en la imagen para añadir zonas manualmente. «Todo el texto» cubre todo lo que el OCR detecte; «Solo PII» solo emails, teléfonos, DNI, IBAN, etc.
             </p>
+            {error && (
+              <p className="hint">
+                Si el OCR falla, prueba{' '}
+                <button type="button" className="link-btn" onClick={handleLoadTestImage}>
+                  cargar imagen de prueba
+                </button>{' '}
+                y luego «Todo el texto». Si eso funciona, el problema puede ser el tamaño o formato de tu imagen.
+              </p>
+            )}
             {lastCert && (
               <div className="proof-panel">
                 <h4>Certificado de sanitización</h4>

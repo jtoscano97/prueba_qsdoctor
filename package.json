@@ -9,6 +9,7 @@
   ],
   "scripts": {
     "dev:web": "npm run dev -w @redactguard/web",
+    "dev:web:mobile": "npm run dev:mobile -w @redactguard/web",
     "dev:desktop": "npm run tauri dev -w @redactguard/desktop",
     "build:web": "npm run build:wasm && npm run build -w @redactguard/web",
     "build:wasm": "cd packages/redactguard-wasm && wasm-pack build --target web",
